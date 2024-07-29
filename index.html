@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Posex(如一智能科技)</title>
+    <link rel="icon" type="image/png" href="logo.png">
+    <link rel="stylesheet" href="css/main.css">
+    <script async src="js/es-module-shims.js"></script>
+    <script type="importmap">
+        {
+          "imports": {
+            "three": "./js/three.module.js",
+            "three-trackballcontrols": "./js/TrackballControls.js",
+            "three-dragcontrols": "./js/DragControls.js",
+            "three-meshline": "./js/THREE.MeshLine.Module.min.js",
+            "posex": "./js/posex.js"
+          }
+        }
+    </script>
+    <script type="esms-options">
+        {
+            "noLoadEventRetriggers": true
+        }
+    </script>
+    <script defer type="module" src="js/app.js"></script>
+</head>
+
+<body>
+<div id="loading" class="loading-overlay">
+    <div class="spinner"></div>
+</div>
+<div id="point_name">
+
+</div>
+
+
+<div id="cont">
+    <div style="display: flex; height: 100px; flex-direction: row; gap: 0 0.5em;">
+        <button id="upload_materiel" class="box" style="flex: 1 1 0"
+                onclick="document.querySelector('#materiel_file').click();">📤文件上传
+        </button>
+        <input type="file" id="materiel_file" style="display: none;" multiple/>
+        <button id="reset_pose" class="box" style="flex: 1 1 0">&#x1f9cd; 重置(A)</button>
+        <button id="last_step" class="box" style="flex: 1 1 0">&#x1f9cd; 回到上一步(Z)</button>
+        <button id="recognize_pose_frame" class="box" style="flex: 1 1 0">&#x1f9cd; 重新识别(S)</button>
+        <button id="show_or_hide_bg" style="flex: 1 1 0;">&#x1f5bc; 显示/隐藏背景(D)</button>
+        <button id="show_or_hide_pose" style="flex: 1 1 0;">&#x1f5bc; 显示/隐藏pose(F)</button>
+        <button id="save_pose" style="flex: 1 1 0;">&#x1f5bc; 保存(G)</button>
+        <button id="download_img" class="box" href="#">&#x1f4be; 保存图片(H)</button>
+        <button id="download_pose" style="flex: 1 1 0;">&#x1f5bc; 下载(J)</button>
+        <button id="delete_cache" style="flex: 1 1 0;">&#x1f5bc; 删除记录(DELETE)</button>
+        <button id="load_last_pose" style="flex: 1 1 0;">&#x1f5bc; 导入上一帧（K）</button>
+        <button id="load_next_pose" style="flex: 1 1 0;">&#x1f5bc; 导入下一帧（L）</button>
+        <button id="preview_frame" style="flex: 1 1 0;">&#x1f5bc; 预览</button>
+        <button id="smooth" style="flex: 1 1 0;">&#x1f5bc; 平滑</button>
+    </div>
+
+    <div style="display: flex; flex-direction: row; " class="slider-container">
+        <input type="range" style="width: 1000px" class="slider" id="progress_slider">
+        <div class="value-display" id="progress_slider_value">0</div>
+    </div>
+
+    <div style="display: flex; flex-direction: row; ">
+        <img id="last_frame_img" style="margin-right: 20px"/>
+        <canvas width="1080" height="1920" id="main_canvas"></canvas>
+        <img id="next_frame_img" style="margin-left: 20px"/>
+    </div>
+
+    <div id="pointMenu" class="context-menu">
+        <ul>
+            <li id="delete_point">删除</li>
+            <li id="import_point">导入</li>
+            <ul>
+                <li>导入上一帧</li>
+                <ul>
+                    <li id="import_last_point">导入当前点</li>
+                    <li id="import_last_point_all">导入所有点</li>
+                </ul>
+                <li>导入下一帧</li>
+                <ul>
+                    <li id="import_next_point">导入当前点</li>
+                    <li id="import_next_point_all">导入所有点</li>
+                </ul>
+            </ul>
+            <li id="add_point">新增</li>
+            <li id="gesturelib">手势库</li>
+            <ul id="open_gesturelib_ul">
+                <li id="open_gesturelib">打开</li>
+                <li id="save_gesture">保存当前手势</li>
+                <li id="flip">自定义翻转</li>
+                <li id="horizontal_flip">水平翻转</li>
+                <li id="vertical_flip">垂直翻转</li>
+            </ul>
+        </ul>
+    </div>
+    <div class="popup-bg" id="popup-bg"></div>
+
+    <div class="popup" id="popup">
+        <div class="element_list" id="element_list">
+        </div>
+        <button class="close_popup" id="close_popup">关闭</button>
+    </div>
+
+
+    <div class="popup_smooth" id="popup_smooth">
+        请在画布选择需要平滑的点：<p id="smooth_value"></p>
+        <button class="smooth_and_download" id="smooth_and_download">平滑并下载</button>
+        <button class="smooth_preview" id="smooth_preview">预览</button>
+        <button class="smooth_clean" id="smooth_clean">清除</button>
+    </div>
+
+    <div class="popup_flip" id="popup_flip">
+        横向旋转：<input type="range" min="-180" max="180" style="width: 1000px" class="slider"
+                        id="horizontal_flip_slider">
+        <div class="value-display" id="horizontal_flip_slider_value">0</div>
+
+        纵向旋转：<input type="range" style="width: 1000px" class="slider" id="vertical_flip_slider">
+        <div class="value-display" id="vertical_flip_slider_value">0</div>
+
+        <button class="close_flip_popup" id="close_flip_popup">确定</button>
+    </div>
+
+
+</body>
+
+</html>
