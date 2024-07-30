@@ -20,7 +20,7 @@ function getFrameByIndex(id, index, callback) {
             alert('请求失败');
         }
     };
-    xhr.open('GET', '/get_frame_by_index?' + params, true);
+    xhr.open('GET', 'get_frame_by_index?' + params, true);
     xhr.send();
     showLoading()
 }
@@ -50,7 +50,7 @@ function saveFrameByIndex(is_save, id, index, pose_data, callback = null) {
             alert('请求失败');
         }
     };
-    xhr.open('POST', '/save_frame_by_index', true);
+    xhr.open('POST', 'save_frame_by_index', true);
     xhr.setRequestHeader("Content-Type", "application/json");
     xhr.send(JSON.stringify(requestData));
 }
@@ -78,7 +78,7 @@ function recognizePoseFrameByIndex(id, index, callback) {
             alert('请求失败');
         }
     };
-    xhr.open('GET', '/recognize_pose_frame?' + params, true);
+    xhr.open('GET', 'recognize_pose_frame?' + params, true);
     xhr.send();
 }
 
@@ -115,7 +115,7 @@ function uploadmateriel(ui, callback) {
             alert('请求失败');
         }
     };
-    xhr.open('POST', '/upload', true);
+    xhr.open('POST', 'upload', true);
     xhr.send(formData);
     ui.materiel.value = '';
 }
@@ -135,13 +135,13 @@ function deleteCacheById(id, callback) {
             alert('请求失败');
         }
     };
-    xhr.open('GET', '/delete?' + params, true);
+    xhr.open('GET', 'delete?' + params, true);
     xhr.send();
 }
 
 function downloadPoseById(id) {
     showLoading()
-    var fileUrl = '/download?id=' + id;
+    var fileUrl = 'download?id=' + id;
     var a = document.createElement('a');
     a.href = fileUrl;
     document.body.appendChild(a);
@@ -170,7 +170,7 @@ function getAllFrameById(id, callback) {
             alert('请求失败');
         }
     };
-    xhr.open('GET', '/get_all_frame_by_id?' + params, true);
+    xhr.open('GET', 'get_all_frame_by_id?' + params, true);
     xhr.send();
 }
 
@@ -186,7 +186,7 @@ function saveGesture(data) {
             alert('请求失败');
         }
     };
-    xhr.open('POST', '/save_gesturelib', true);
+    xhr.open('POST', 'save_gesturelib', true);
     xhr.setRequestHeader("Content-Type", "application/json");
     xhr.send(JSON.stringify(data));
 }
@@ -210,7 +210,7 @@ function deleteGesture(id) {
             alert('请求失败');
         }
     };
-    xhr.open('DELETE', '/delete_gesturelib?' + params, true);
+    xhr.open('DELETE', 'delete_gesturelib?' + params, true);
     xhr.send();
 }
 
@@ -230,7 +230,7 @@ function listGesture(callback) {
             alert('请求失败');
         }
     };
-    xhr.open('GET', '/get_all_gesturelib', true);
+    xhr.open('GET', 'get_all_gesturelib', true);
     xhr.send();
 }
 
@@ -241,7 +241,7 @@ function downloadSmooth(id, index) {
     }
 
     showLoading()
-    var fileUrl = '/download_smooth?id=' + id + '&index=' + Array.from(index).join(',');
+    var fileUrl = 'download_smooth?id=' + id + '&index=' + Array.from(index).join(',');
     var a = document.createElement('a');
     a.href = fileUrl;
     document.body.appendChild(a);
@@ -275,7 +275,7 @@ function previewSmoothById(id, index, callback) {
             alert('请求失败');
         }
     };
-    xhr.open('GET', '/preview_smooth?' + params, true);
+    xhr.open('GET', 'preview_smooth?' + params, true);
     xhr.send();
 }
 
