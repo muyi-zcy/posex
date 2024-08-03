@@ -200,7 +200,7 @@ class HandHandle:
                     right_hand[index] = [hand_landmark.x, hand_landmark.y]
                 index += 1
 
-            hand = np.array([left_hand, right_hand])
-            pose["hands"] = hand
+        hand = np.array([left_hand, right_hand])
+        pose["hands"] = hand
 
         return pose
