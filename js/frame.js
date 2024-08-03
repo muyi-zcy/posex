@@ -345,6 +345,7 @@ class Frame {
         for (const point of this.current_pose) {
             if (this.delete_points.has(index)) {
                 index++
+                continue
             }
             this.joints[index].position.x = this.poseConvertToPositionX(point[0])
             this.joints[index].position.y = this.poseConvertToPositionY(point[1])

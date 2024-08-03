@@ -1,8 +1,23 @@
 import copy
+import os
+import tempfile
+import uuid
+from PIL import Image
+
 import torch
 import numpy as np
 from dwpose import util
 from dwpose.wholebody import Wholebody
+import mediapipe as mp
+import cv2
+import mediapipe as mp
+from mediapipe.tasks import python
+from mediapipe.tasks.python import vision
+from mediapipe.framework.formats import landmark_pb2
+from mediapipe import solutions, ImageFormat
+import numpy as np
+
+mp_hands = mp.solutions.hands
 
 
 class DWposeDetector:
@@ -96,3 +111,96 @@ class PoseHandle:
         canvas = util.draw_handpose(canvas, hands)
         hand_pose = copy.deepcopy(canvas)
         return hand_pose
+
+
+class HandHandle:
+    def __init__(self):
+        base_options = python.BaseOptions(model_asset_path='data/1/hand_landmarker.task')
+        options = vision.HandLandmarkerOptions(base_options=base_options,
+                                               min_hand_detection_confidence=0.2,
+                                               min_hand_presence_confidence=0.2,
+                                               num_hands=2)
+        self.detector = vision.HandLandmarker.create_from_options(options)
+
+    def default_pose(self):
+        return [[-1, -1], [-1, -1], [-1, -1], [-1, -1],
+                [-1, -1], [-1, -1], [-1, -1], [-1, -1],
+                [-1, -1], [-1, -1], [-1, -1], [-1, -1],
+                [-1, -1], [-1, -1], [-1, -1], [-1, -1],
+                [-1, -1], [-1, -1], [-1, -1], [-1, -1],
+                [-1, -1]
+                ]
+
+    def crop_image(image_path, x_ratio, y_ratio, output_path):
+        # 打开图片
+        image = Image.open(image_path)
+        image_width, image_height = image.size
+
+        # 计算中心点的像素坐标
+        center_x = int(image_width * x_ratio)
+        center_y = int(image_height * y_ratio)
+
+        # 计算裁剪区域的边界
+        half_size = 250  # 因为我们要裁剪 500x500 的区域
+        left = center_x - half_size
+        right = center_x + half_size
+        top = center_y - half_size
+        bottom = center_y + half_size
+
+        # 调整边界，确保不超出图片边界
+        if left < 0:
+            left = 0
+            right = 500
+        if right > image_width:
+            right = image_width
+            left = image_width - 500
+        if top < 0:
+            top = 0
+            bottom = 500
+        if bottom > image_height:
+            bottom = image_height
+            top = image_height - 500
+
+        # 裁剪图片
+        cropped_image = image.crop((left, top, right, bottom))
+
+        # 保存裁剪后的图片
+        cropped_image.save(output_path)
+
+
+
+    def handle(self, pose, frame):
+        left_hand_pose = pose["hands"].tolist()[0]
+        right_hand_pose = pose["hands"].tolist()[1]
+
+        left_hand = copy.deepcopy(left_hand_pose)
+        right_hand = copy.deepcopy(right_hand_pose)
+
+        temp_folder = "data/temp"
+        if not os.path.exists(temp_folder):
+            os.makedirs(temp_folder)
+        temp_file = os.path.join(temp_folder, f'{str(uuid.uuid4().int)}.png')
+        cv2.imwrite(temp_file, frame)
+        frame = mp.Image.create_from_file(temp_file)
+        hands_pose = self.detector.detect(frame)
+        os.remove(temp_file)
+
+        hand_landmarks_list = hands_pose.hand_landmarks
+        handedness_list = hands_pose.handedness
+
+        for idx in range(len(hand_landmarks_list)):
+            hand_landmarks = hand_landmarks_list[idx]
+            handedness = handedness_list[idx]
+
+            index = 0
+            for hand_landmark in hand_landmarks:
+                if "Left" == handedness[0].category_name:
+                    left_hand[index] = [hand_landmark.x, hand_landmark.y]
+                else:
+                    right_hand[index] = [hand_landmark.x, hand_landmark.y]
+                index += 1
+
+            hand = np.array([left_hand, right_hand])
+            pose["hands"] = hand
+
+        return pose

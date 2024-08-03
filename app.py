@@ -13,7 +13,7 @@ from fastapi import FastAPI, File, UploadFile
 from fastapi.responses import FileResponse
 from starlette.middleware.cors import CORSMiddleware
 from common.myResult import MyResult
-from common.poseHandle import PoseHandle
+from common.poseHandle import PoseHandle, HandHandle
 from exception.myException import MyException
 from util.pose import smooth_dwpose_file
 from util.xfile import calculate_md5_for_files
@@ -32,6 +32,7 @@ DATA_DIR = "data"
 IMG_ALLOWED_EXTENSIONS = ['jpg', 'png']
 VIDEO_ALLOWED_EXTENSIONS = 'mp4'
 poseHandle = PoseHandle()
+handHandle = HandHandle()
 
 img_base64 = "data:image/jpeg;base64,"
 
@@ -89,6 +90,7 @@ async def upload_files(files: List[UploadFile] = File(...)):
                     break
                 cv2.imwrite(os.path.join(frame_path, f"{index:04}.png"), frame)
                 pose = poseHandle.handle(frame)
+                pose = handHandle.handle(pose, frame)
                 with open(os.path.join(pose_path, f"{index:04}.pkl"), 'wb') as f:
                     pickle.dump(pose, f)
                 index_data = {
@@ -115,7 +117,9 @@ async def upload_files(files: List[UploadFile] = File(...)):
                 with open(materiel_file_path, "wb") as f:
                     f.write(file.file.read())
 
-                pose = poseHandle.handle(cv2.imread(materiel_file_path))
+                frame = cv2.imread(materiel_file_path)
+                pose = poseHandle.handle(frame)
+                pose = handHandle.handle(pose, frame)
                 with open(os.path.join(pose_path, f"{index:04}.pkl"), 'wb') as f:
                     pickle.dump(pose, f)
                 index_data = {
@@ -229,6 +233,7 @@ def save_frame_by_index(data: dict):
 def recognize_pose_frame(id: str, index: int):
     materiel_file_path = os.path.join('data', str(id), "frame", f"{index:04}.png")
     pose = poseHandle.handle(cv2.imread(materiel_file_path))
+    pose = handHandle.handle(pose, cv2.imread(materiel_file_path))
     with open(os.path.join('data', str(id), "pose", f"{index:04}.pkl"), 'wb') as f:
         pickle.dump(pose, f)
     return MyResult.ok()

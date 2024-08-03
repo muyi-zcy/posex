@@ -809,7 +809,12 @@ function init_3d(ui) {
         let index = 0
         for (const [from_index, to_index] of limb_pairs) {
             const [from, to] = [joints[from_index], joints[to_index]];
-            create_limb(limbs[index], from, to);
+            if(current_frame.delete_points.has(from_index) || current_frame.delete_points.has(to_index)){
+                limbs[index].visible = false
+            }else {
+                limbs[index].visible = true
+                create_limb(limbs[index], from, to);
+            }
             index++
         }
         renderer.render(scene, camera);
