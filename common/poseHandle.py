@@ -115,7 +115,7 @@ class PoseHandle:
 
 class HandHandle:
     def __init__(self):
-        base_options = python.BaseOptions(model_asset_path='data/1/hand_landmarker.task')
+        base_options = python.BaseOptions(model_asset_path='checkpoints/hand_landmarker.task')
         options = vision.HandLandmarkerOptions(base_options=base_options,
                                                min_hand_detection_confidence=0.2,
                                                min_hand_presence_confidence=0.2,
