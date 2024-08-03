@@ -29,7 +29,6 @@ class DWposeDetector:
         H, W, C = oriImg.shape
         with torch.no_grad():
             candidate, subset = self.pose_estimation(oriImg)
-            print(candidate)
             candidate = candidate[0][np.newaxis, :, :]
             subset = subset[0][np.newaxis, :]
             nums, keys, locs = candidate.shape
@@ -117,9 +116,9 @@ class HandHandle:
     def __init__(self):
         base_options = python.BaseOptions(model_asset_path='checkpoints/hand_landmarker.task')
         options = vision.HandLandmarkerOptions(base_options=base_options,
-                                               min_hand_detection_confidence=0.2,
+                                               min_hand_detection_confidence=0.1,
                                                min_hand_presence_confidence=0.2,
-                                               num_hands=2)
+                                               num_hands=3)
         self.detector = vision.HandLandmarker.create_from_options(options)
 
     def default_pose(self):
@@ -167,8 +166,6 @@ class HandHandle:
         # 保存裁剪后的图片
         cropped_image.save(output_path)
 
-
-
     def handle(self, pose, frame):
         left_hand_pose = pose["hands"].tolist()[0]
         right_hand_pose = pose["hands"].tolist()[1]
@@ -187,16 +184,39 @@ class HandHandle:
 
         hand_landmarks_list = hands_pose.hand_landmarks
         handedness_list = hands_pose.handedness
-
+        right_skew = 100000
+        left_skew = 100000
         for idx in range(len(hand_landmarks_list)):
             hand_landmarks = hand_landmarks_list[idx]
             handedness = handedness_list[idx]
+            category_name = handedness[0].category_name
+
+            current_left_skew = hand_landmarks[0].x - left_hand_pose[0][0]
+            current_right_skew = hand_landmarks[0].x - right_hand_pose[0][0]
+            if abs(current_right_skew) < abs(current_left_skew):
+                category_name = "Right"
+            else:
+                category_name = "Left"
+
+            if "Left" == category_name:
+                current_left_skew = abs(hand_landmarks[0].x - left_hand_pose[0][0])
+                if current_left_skew < left_skew:
+                    left_skew = current_left_skew
+                else:
+                    continue
+            elif "Right" == category_name:
+                current_right_skew = abs(hand_landmarks[0].x - right_hand_pose[0][0])
+                if current_right_skew < right_skew:
+                    right_skew = current_right_skew
+                else:
+                    continue
+                continue
 
             index = 0
             for hand_landmark in hand_landmarks:
-                if "Left" == handedness[0].category_name:
+                if "Left" == category_name:
                     left_hand[index] = [hand_landmark.x, hand_landmark.y]
-                else:
+                elif "Right" == category_name:
                     right_hand[index] = [hand_landmark.x, hand_landmark.y]
                 index += 1
 

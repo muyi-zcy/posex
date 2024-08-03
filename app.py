@@ -11,6 +11,7 @@ import uvicorn
 from PIL import Image
 from fastapi import FastAPI, File, UploadFile
 from fastapi.responses import FileResponse
+from tqdm import tqdm
 from starlette.middleware.cors import CORSMiddleware
 from common.myResult import MyResult
 from common.poseHandle import PoseHandle, HandHandle
@@ -60,14 +61,16 @@ async def upload_files(files: List[UploadFile] = File(...)):
     upload_subdir = os.path.join(DATA_DIR, file_md5)
     result_data = []
     count = 0
+    if os.path.exists(upload_subdir):
+        file_name_file = os.path.join(upload_subdir, "name")
+        if not os.path.exists(file_name_file):
+            shutil.rmtree(upload_subdir)
+
     if not os.path.exists(upload_subdir):
         os.makedirs(upload_subdir)
         if is_single_file and has_video:
             video_file = files[0]
             materiel_file_folder = os.path.join(upload_subdir, 'materiel')
-            file_name_file = os.path.join(upload_subdir, "name")
-            with open(file_name_file, "w", encoding="utf-8") as f:
-                f.write(os.path.splitext(os.path.basename(files[0].filename))[0])
 
             materiel_file_path = os.path.join(materiel_file_folder, video_file.filename)
             if not os.path.exists(materiel_file_folder):
@@ -76,6 +79,8 @@ async def upload_files(files: List[UploadFile] = File(...)):
             with open(materiel_file_path, "wb") as f:
                 f.write(video_file.file.read())
 
+            video = cv2.VideoCapture(materiel_file_path)
+            frame_count = int(video.get(cv2.CAP_PROP_FRAME_COUNT))
             vcap = cv2.VideoCapture(materiel_file_path)
             index = 0
             frame_path = os.path.join(upload_subdir, 'frame')
@@ -84,21 +89,27 @@ async def upload_files(files: List[UploadFile] = File(...)):
                 os.makedirs(frame_path)
             if not os.path.exists(pose_path):
                 os.makedirs(pose_path)
-            while True:
-                flag, frame = vcap.read()
-                if (not flag):
-                    break
-                cv2.imwrite(os.path.join(frame_path, f"{index:04}.png"), frame)
-                pose = poseHandle.handle(frame)
-                pose = handHandle.handle(pose, frame)
-                with open(os.path.join(pose_path, f"{index:04}.pkl"), 'wb') as f:
-                    pickle.dump(pose, f)
-                index_data = {
-                    "path": f'data/{file_md5}/frame/{index:04}.png',
-                    "pose": f'data/{file_md5}/pose/{index:04}.pkl'
-                }
-                index = index + 1
-                result_data.append(index_data)
+            with tqdm(total=frame_count) as pbar:
+                while True:
+                    flag, frame = vcap.read()
+                    if (not flag):
+                        break
+                    cv2.imwrite(os.path.join(frame_path, f"{index:04}.png"), frame)
+                    pose = poseHandle.handle(frame)
+                    pose = handHandle.handle(pose, frame)
+                    with open(os.path.join(pose_path, f"{index:04}.pkl"), 'wb') as f:
+                        pickle.dump(pose, f)
+                    index_data = {
+                        "path": f'data/{file_md5}/frame/{index:04}.png',
+                        "pose": f'data/{file_md5}/pose/{index:04}.pkl'
+                    }
+                    index = index + 1
+                    result_data.append(index_data)
+                    pbar.update(1)
+
+            file_name_file = os.path.join(upload_subdir, "name")
+            with open(file_name_file, "w", encoding="utf-8") as f:
+                f.write(os.path.splitext(os.path.basename(files[0].filename))[0])
         else:
             index = 0
             frame_path = os.path.join(upload_subdir, 'frame')
