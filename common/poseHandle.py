@@ -191,12 +191,13 @@ class HandHandle:
             handedness = handedness_list[idx]
             category_name = handedness[0].category_name
 
-            current_left_skew = hand_landmarks[0].x - left_hand_pose[0][0]
-            current_right_skew = hand_landmarks[0].x - right_hand_pose[0][0]
-            if abs(current_right_skew) < abs(current_left_skew):
-                category_name = "Right"
-            else:
-                category_name = "Left"
+            if left_hand_pose[0][0] != -1 and right_hand_pose[0][0] != -1:
+                current_left_skew = hand_landmarks[0].x - left_hand_pose[0][0]
+                current_right_skew = hand_landmarks[0].x - right_hand_pose[0][0]
+                if abs(current_right_skew) < abs(current_left_skew):
+                    category_name = "Right"
+                else:
+                    category_name = "Left"
 
             if "Left" == category_name:
                 current_left_skew = abs(hand_landmarks[0].x - left_hand_pose[0][0])
