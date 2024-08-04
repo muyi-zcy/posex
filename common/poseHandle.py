@@ -121,50 +121,51 @@ class HandHandle:
                                                num_hands=3)
         self.detector = vision.HandLandmarker.create_from_options(options)
 
-    def default_pose(self):
-        return [[-1, -1], [-1, -1], [-1, -1], [-1, -1],
-                [-1, -1], [-1, -1], [-1, -1], [-1, -1],
-                [-1, -1], [-1, -1], [-1, -1], [-1, -1],
-                [-1, -1], [-1, -1], [-1, -1], [-1, -1],
-                [-1, -1], [-1, -1], [-1, -1], [-1, -1],
-                [-1, -1]
-                ]
+    def crop_image(self, frame, x, y):
+        # frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        height, width, _ = frame.shape
+        x = x * width
+        y = y * height
+        # 定义裁剪区域的宽和高为原图片的四分之一
+        crop_width = width // 2
+        crop_height = height // 2
 
-    def crop_image(image_path, x_ratio, y_ratio, output_path):
-        # 打开图片
-        image = Image.open(image_path)
-        image_width, image_height = image.size
+        # 计算裁剪区域的起始和结束坐标
+        x_start = x - crop_width // 2
+        y_start = y - crop_height // 2
+        x_end = x + crop_width // 2
+        y_end = y + crop_height // 2
 
-        # 计算中心点的像素坐标
-        center_x = int(image_width * x_ratio)
-        center_y = int(image_height * y_ratio)
+        # 计算需要填充的尺寸
+        top_pad = int(max(0, -y_start))
+        bottom_pad = int(max(0, y_end - height))
+        left_pad = int(max(0, -x_start))
+        right_pad = int(max(0, x_end - width))
 
-        # 计算裁剪区域的边界
-        half_size = 250  # 因为我们要裁剪 500x500 的区域
-        left = center_x - half_size
-        right = center_x + half_size
-        top = center_y - half_size
-        bottom = center_y + half_size
+        # 进行填充
+        if top_pad > 0 or bottom_pad > 0 or left_pad > 0 or right_pad > 0:
+            frame = np.pad(frame, ((top_pad, bottom_pad), (left_pad, right_pad), (0, 0)), mode='constant', constant_values=0)
 
-        # 调整边界，确保不超出图片边界
-        if left < 0:
-            left = 0
-            right = 500
-        if right > image_width:
-            right = image_width
-            left = image_width - 500
-        if top < 0:
-            top = 0
-            bottom = 500
-        if bottom > image_height:
-            bottom = image_height
-            top = image_height - 500
+        # 更新起始和结束坐标以适应填充后的图像
+        x_start = int(max(x_start, 0))
+        y_start = int(max(y_start, 0))
+        x_end = int(x_start + crop_width)
+        y_end = int(y_start + crop_height)
 
         # 裁剪图片
-        cropped_image = image.crop((left, top, right, bottom))
+        return frame[y_start:y_end, x_start:x_end], x_start / width, y_start / height
 
-        # 保存裁剪后的图片
-        cropped_image.save(output_path)
+    def transform_points(self, points_frame1, skew_value_x, skew_value_y):
+        scale = 2
+
+        # 将 points_frame1 转换到 frame2
+        points_frame2 = []
+        for point in points_frame1:
+            x_frame2 = point[0] / scale + skew_value_x
+            y_frame2 = point[1] / scale + skew_value_y
+            points_frame2.append((x_frame2, y_frame2))
+
+        return points_frame2
 
     def handle(self, pose, frame):
         left_hand_pose = pose["hands"].tolist()[0]
@@ -220,6 +221,77 @@ class HandHandle:
                 elif "Right" == category_name:
                     right_hand[index] = [hand_landmark.x, hand_landmark.y]
                 index += 1
+
+        hand = np.array([left_hand, right_hand])
+        pose["hands"] = hand
+
+        return pose
+
+    def separate_handle(self, pose, frame):
+        height, width, _ = frame.shape
+
+        bode_pose = pose["bodies"]["candidate"].tolist()
+        left_hand_pose = pose["hands"].tolist()[0]
+        right_hand_pose = pose["hands"].tolist()[1]
+
+        left_wrist = bode_pose[7]
+        right_wrist = bode_pose[4]
+
+        left_hand = copy.deepcopy(left_hand_pose)
+        right_hand = copy.deepcopy(right_hand_pose)
+
+        temp_folder = "data/temp"
+        if not os.path.exists(temp_folder):
+            os.makedirs(temp_folder)
+
+        ## 裁剪出左手
+        if left_wrist[0] != -1:
+            left_frame, skew_value_x, skew_value_y = self.crop_image(frame, left_wrist[0], left_wrist[1])
+            temp_file = os.path.join(temp_folder, f'{str(uuid.uuid4().int)}.png')
+            cv2.imwrite(temp_file, left_frame)
+            left_frame = mp.Image.create_from_file(temp_file)
+            left_hands_pose = self.detector.detect(left_frame)
+            hand_landmarks_list = left_hands_pose.hand_landmarks
+            handedness_list = left_hands_pose.handedness
+            index = 0
+            if len(hand_landmarks_list) > 0:
+                for idx in range(len(hand_landmarks_list)):
+                    handedness = handedness_list[idx]
+                    category_name = handedness[0].category_name
+                    if category_name == 'Left':
+                        index = idx
+                hand_landmarks = hand_landmarks_list[index]
+                index = 0
+                for hand_landmark in hand_landmarks:
+                    left_hand[index] = [hand_landmark.x, hand_landmark.y]
+                    index += 1
+                left_hand = self.transform_points(left_hand, skew_value_x, skew_value_y)
+
+            os.remove(temp_file)
+
+        if right_wrist[0] != -1:
+            right_frame, skew_value_x, skew_value_y = self.crop_image(frame, right_wrist[0], right_wrist[1])
+            temp_file = os.path.join(temp_folder, f'{str(uuid.uuid4().int)}.png')
+            cv2.imwrite(temp_file, right_frame)
+            right_frame = mp.Image.create_from_file(temp_file)
+            right_hands_pose = self.detector.detect(right_frame)
+            hand_landmarks_list = right_hands_pose.hand_landmarks
+            handedness_list = right_hands_pose.handedness
+            os.remove(temp_file)
+            index = 0
+            if len(hand_landmarks_list) > 0:
+                for idx in range(len(hand_landmarks_list)):
+                    handedness = handedness_list[idx]
+                    category_name = handedness[0].category_name
+                    if category_name == 'Right':
+                        index = idx
+
+                hand_landmarks = hand_landmarks_list[index]
+                index = 0
+                for hand_landmark in hand_landmarks:
+                    right_hand[index] = [hand_landmark.x, hand_landmark.y]
+                    index += 1
+                right_hand = self.transform_points(right_hand, skew_value_x, skew_value_y)
 
         hand = np.array([left_hand, right_hand])
         pose["hands"] = hand
