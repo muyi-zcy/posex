@@ -609,6 +609,10 @@ function init_3d(ui) {
         current_frame.verticalFlip(tap_point_index)
     }
 
+    function interchange() {
+        current_frame.interchange()
+    }
+
     function smooth() {
         if (id === 'default') {
             return
@@ -746,7 +750,8 @@ function init_3d(ui) {
         new Event(null, 'click', ui.smooth_preview, previewSmooth),
         new Event(null, 'click', ui.smooth_and_download, smoothAndDownload),
         new Event(null, 'click', ui.horizontal_flip, horizontalFlip),
-        new Event(null, 'click', ui.vertical_flip, verticalFlip)
+        new Event(null, 'click', ui.vertical_flip, verticalFlip),
+        new Event(null, 'click', ui.interchange, interchange),
     ])
 
     const onAnimateEndOneshot = [];

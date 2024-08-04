@@ -127,15 +127,16 @@ class HandHandle:
         x = x * width
         y = y * height
         # 定义裁剪区域的宽和高为原图片的四分之一
-        crop_width = width // 2
-        crop_height = height // 2
+        crop_width = width // 3
+        crop_height = height // 3
 
         # 计算裁剪区域的起始和结束坐标
         x_start = x - crop_width // 2
         y_start = y - crop_height // 2
         x_end = x + crop_width // 2
         y_end = y + crop_height // 2
-
+        skew_value_x = x_start
+        skew_value_y = y_start
         # 计算需要填充的尺寸
         top_pad = int(max(0, -y_start))
         bottom_pad = int(max(0, y_end - height))
@@ -153,10 +154,10 @@ class HandHandle:
         y_end = int(y_start + crop_height)
 
         # 裁剪图片
-        return frame[y_start:y_end, x_start:x_end], x_start / width, y_start / height
+        return frame[y_start:y_end, x_start:x_end], skew_value_x / width, skew_value_y / height
 
     def transform_points(self, points_frame1, skew_value_x, skew_value_y):
-        scale = 2
+        scale = 3
 
         # 将 points_frame1 转换到 frame2
         points_frame2 = []

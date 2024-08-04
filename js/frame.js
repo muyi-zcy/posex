@@ -542,6 +542,16 @@ class Frame {
         }
     }
 
+    interchange() {
+        const pose_data = deepClone(this.current_pose)
+        for (let index = 20; index <= 40; index++) {
+            const left_hand = pose_data[index]
+            pose_data[index] = pose_data[index + 21]
+            pose_data[index + 21] = left_hand
+        }
+        this.updatePoseData(pose_data)
+    }
+
     minificationAndExpansion(index, horizontal_value, vertical_value) {
         const descendants = findDescendants(limb_pairs, index)
         let [px, py, pz] = this.current_pose[index]

@@ -45,6 +45,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         close_flip_popup: document.querySelector('#close_flip_popup'),
         flip: document.querySelector('#flip'),
         smooth_preview: document.querySelector('#smooth_preview'),
+        interchange: document.querySelector('#interchange'),
     };
 
     document.oncontextmenu = function () {
