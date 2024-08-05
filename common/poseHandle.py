@@ -1,20 +1,14 @@
 import copy
+import math
 import os
-import tempfile
 import uuid
-from PIL import Image
-
 import torch
-import numpy as np
 from dwpose import util
 from dwpose.wholebody import Wholebody
-import mediapipe as mp
 import cv2
 import mediapipe as mp
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
-from mediapipe.framework.formats import landmark_pb2
-from mediapipe import solutions, ImageFormat
 import numpy as np
 
 mp_hands = mp.solutions.hands
@@ -110,6 +104,19 @@ class PoseHandle:
         canvas = util.draw_handpose(canvas, hands)
         hand_pose = copy.deepcopy(canvas)
         return hand_pose
+
+
+def calculate_distance(point1, point2):
+    """
+    计算两点之间的欧几里得距离
+    :param point1: 第一个点的坐标 (x1, y1)
+    :param point2: 第二个点的坐标 (x2, y2)
+    :return: 两点之间的距离
+    """
+    x1, y1 = point1
+    x2, y2 = point2
+    distance = math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
+    return distance
 
 
 class HandHandle:
@@ -270,13 +277,12 @@ class HandHandle:
                 index = 0
                 brew = 100000
                 for left_hand_landmark in left_hand_list:
-                    if abs(left_hand_pose[0][0] - left_hand_landmark[0][0]) < brew:
-                        brew = abs(left_hand_pose[0][0] - left_hand_landmark[0][0])
+                    if abs(calculate_distance(left_wrist, left_hand_landmark[0])) < brew:
+                        brew = abs(calculate_distance(left_wrist, left_hand_landmark[0]))
                         flag = index
                     index += 1
-
-                left_hand = left_hand_list[flag]
-
+                if brew < 0.1:
+                    left_hand = left_hand_list[flag]
 
         if right_wrist[0] != -1:
             right_frame, skew_value_x, skew_value_y = self.crop_image(frame, right_wrist[0], right_wrist[1])
@@ -302,13 +308,12 @@ class HandHandle:
                 index = 0
                 brew = 100000
                 for right_hand_landmark in right_hand_list:
-                    if abs(right_hand_pose[0][0] - right_hand_landmark[0][0]) < brew:
-                        brew = abs(right_hand_pose[0][0] - right_hand_landmark[0][0])
+                    if abs(calculate_distance(right_wrist, right_hand_landmark[0])) < brew:
+                        brew = abs(calculate_distance(right_wrist, right_hand_landmark[0]))
                         flag = index
                     index += 1
-
-                right_hand = right_hand_list[flag]
-
+                if brew < 0.1:
+                    right_hand = right_hand_list[flag]
 
         hand = np.array([left_hand, right_hand])
         pose["hands"] = hand
