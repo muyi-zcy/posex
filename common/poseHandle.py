@@ -253,22 +253,30 @@ class HandHandle:
             left_frame = mp.Image.create_from_file(temp_file)
             left_hands_pose = self.detector.detect(left_frame)
             hand_landmarks_list = left_hands_pose.hand_landmarks
-            handedness_list = left_hands_pose.handedness
-            index = 0
+            os.remove(temp_file)
+            left_hand_list = []
             if len(hand_landmarks_list) > 0:
                 for idx in range(len(hand_landmarks_list)):
-                    handedness = handedness_list[idx]
-                    category_name = handedness[0].category_name
-                    if category_name == 'Left':
-                        index = idx
-                hand_landmarks = hand_landmarks_list[index]
-                index = 0
-                for hand_landmark in hand_landmarks:
-                    left_hand[index] = [hand_landmark.x, hand_landmark.y]
-                    index += 1
-                left_hand = self.transform_points(left_hand, skew_value_x, skew_value_y)
+                    left_hand_landmark = copy.deepcopy(left_hand_pose)
+                    hand_landmarks = hand_landmarks_list[idx]
+                    index = 0
+                    for hand_landmark in hand_landmarks:
+                        left_hand_landmark[index] = [hand_landmark.x, hand_landmark.y]
+                        index += 1
+                    left_hand_landmark = self.transform_points(left_hand_landmark, skew_value_x, skew_value_y)
+                    left_hand_list.append(left_hand_landmark)
 
-            os.remove(temp_file)
+                flag = 0
+                index = 0
+                brew = 100000
+                for left_hand_landmark in left_hand_list:
+                    if abs(left_hand_pose[0][0] - left_hand_landmark[0][0]) < brew:
+                        brew = abs(left_hand_pose[0][0] - left_hand_landmark[0][0])
+                        flag = index
+                    index += 1
+
+                left_hand = left_hand_list[flag]
+
 
         if right_wrist[0] != -1:
             right_frame, skew_value_x, skew_value_y = self.crop_image(frame, right_wrist[0], right_wrist[1])
@@ -277,24 +285,34 @@ class HandHandle:
             right_frame = mp.Image.create_from_file(temp_file)
             right_hands_pose = self.detector.detect(right_frame)
             hand_landmarks_list = right_hands_pose.hand_landmarks
-            handedness_list = right_hands_pose.handedness
             os.remove(temp_file)
-            index = 0
+            right_hand_list = []
             if len(hand_landmarks_list) > 0:
                 for idx in range(len(hand_landmarks_list)):
-                    handedness = handedness_list[idx]
-                    category_name = handedness[0].category_name
-                    if category_name == 'Right':
-                        index = idx
+                    right_hand_landmark = copy.deepcopy(right_hand_pose)
+                    hand_landmarks = hand_landmarks_list[idx]
+                    index = 0
+                    for hand_landmark in hand_landmarks:
+                        right_hand_landmark[index] = [hand_landmark.x, hand_landmark.y]
+                        index += 1
+                    right_hand_landmark = self.transform_points(right_hand_landmark, skew_value_x, skew_value_y)
+                    right_hand_list.append(right_hand_landmark)
 
-                hand_landmarks = hand_landmarks_list[index]
+                flag = 0
                 index = 0
-                for hand_landmark in hand_landmarks:
-                    right_hand[index] = [hand_landmark.x, hand_landmark.y]
+                brew = 100000
+                for right_hand_landmark in right_hand_list:
+                    if abs(right_hand_pose[0][0] - right_hand_landmark[0][0]) < brew:
+                        brew = abs(right_hand_pose[0][0] - right_hand_landmark[0][0])
+                        flag = index
                     index += 1
-                right_hand = self.transform_points(right_hand, skew_value_x, skew_value_y)
+
+                right_hand = right_hand_list[flag]
+
 
         hand = np.array([left_hand, right_hand])
         pose["hands"] = hand
 
+        pose["bodies"]["candidate"][7] = pose["hands"][0][0]
+        pose["bodies"]["candidate"][4] = pose["hands"][1][0]
         return pose
