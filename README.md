@@ -1,126 +1,130 @@
-# PoseX 骨骼检测与绑定
-> 通过上传视频和图片，对人体骨骼进行检测和绑定，对准确度不高的骨骼进行修正，对无法识别的骨骼进行预测
-> 基于dwpose（肢体）（https://github.com/IDEA-Research/DWPose） 和mediapipe（手部）（https://github.com/google-ai-edge/mediapipe）
+# PoseX - bone detection and binding
+> By uploading videos and pictures, human bones are detected and bound, bones with low accuracy are corrected, and bones that cannot be identified are predicted
+> based on dwpose (body) (https://github.com/IDEA-Research/DWPose) and mediapipe (hand) (https://github.com/google-ai-edge/mediapipe)
 >
 >
-## 操作步骤
-1、文件上传
+> 
+[English](README.md) · [简体中文](README.zh.md)
 
-支持上传单张图片、单个视频，识别完成后，按帧显示识别结果，识别结果存储到文件夹中，文件夹名为文件的md5值，识别结果存储在data文件夹中，第二次上传不需要再次识别：
+## Operation steps
+1. File upload
+
+Support uploading a single picture, a single video, after the identification is completed, the identification result is displayed according to the frame, the identification result is stored in the folder, the folder is named the md5 value of the file, the identification result is stored in the data folder, the second upload does not need to be identified again:
 ![1.png](image/1.png)
-2、重置(A)
+2. Reset (A)
 
-当前帧每次变化之后都会进行历史记录，重置即恢复到历史记录的最初状态
+The current frame is recorded after each change, and a reset restores the history to its original state
 
-3、回到上一步(Z)
+3. Go back to step (Z)
 ![2.png](image/2.png)
-当前帧每次变化之后都会进行历史记录，重置即恢复到历史记录的上一历史
+The current frame is recorded after each change, and a reset restores the previous history of the history
 
 
-4、重新识别(S)
-对当前操作帧，单帧图片进行单独识别，并更新持久化的识别结果
+4. Re-identification (S)
+The current operation frame and single frame picture are identified separately, and the persistent recognition result is updated
 
-5、显示/隐藏背景(D)
+5. Show/Hide background (D)
 
-只显示骨骼，不显示背景
+Only the bones are shown, not the background
 
 ![3.png](image/3.png)
 
-6、显示/隐藏pose(F)
+6. Show/hide pose(F)
 
-只显示背景不显示骨骼
+Only the background is shown, not the bones
 
 ![4.png](image/4.png)
-7、保存(G)
+7. Save (G)
 
-把当前帧内的骨骼操作进行持久化存储
+Store the skeleton operations in the current frame persistently
 
-8、保存图片(H)
+8. Save Pictures (H)
 
-把当前帧的现状保存为图片进行下载
+Save the current state of the frame as a picture for download
 
-9、下载(J)
+9. Download (J)
 
-下载当前图片或视频所有帧的最新的骨骼数据，下载为pkl格式
+Download the latest bone data for all frames of the current picture or video in pkl format
 
-10、删除记录(DELETE)
+10. DELETE Records
 
-删除当前图片或视频的持久化数据，在此上传需要重新识别
+Delete the persistent data of the current picture or video, where the upload needs to be re-identified
 
-11、导入上一帧（K）
+11. Import previous frame (K)
 
-针对视频使用，导入当前帧的上一帧的骨骼数据
+For video use, import bone data from the previous frame of the current frame
 
-12、导入下一帧（L）
+12. Import next frame (L)
 
-针对视频使用，导入当前帧的下一帧的骨骼数据
+For video use, import bone data from the current frame to the next frame
 
-13、预览
+13. Preview
 
-针对视频使用，预览当前视频的所有骨骼数据，进行动态展示
+For video use, preview all the bone data of the current video for dynamic display
 
-在此点击预览即可停止
+Click preview here to stop
 
-14、平滑
+14. Smooth
 
-针对视频使用，对具体骨骼点不连贯进行处理，点击画面内需要进行平滑处理的骨骼点，点击预览可以看到平滑后的效果（效果同13、预览），下载即下载平滑后的数据（同9、下载）
+For the use of video, handle the incoherence of specific bone points. Click the bone points that need to be smoothed in the screen, click preview to see the smoothed effect (the effect is the same as 13, preview), and download the smoothed data (the same as 9, download).
 
-再次点击平滑即可退出平滑
+Click Smooth again to exit smooth
+
 ![5.png](image/5.png)
 
-## 快捷键
-1、上一部分的操作步骤，部分项后面存在快捷键，按照快捷键操作亦可以实现上述功能
+## Shortcut key
+1, the above part of the operation steps, some items behind the shortcut key, according to the shortcut key operation can also achieve the above functions
 
-2、上下帧切换:直接点击上下帧的预览图片，或按下左右方向键，可以实现切换上下帧，切换之前自动保存当前帧的骨骼数据
+2, the upper and lower frame switch: directly click the preview picture of the upper and lower frames, or press the left and right arrow keys, you can switch the upper and lower frames, and automatically save the skeleton data of the current frame before switching
 
-3、画布缩放：按下上下快捷键，可以实现画布的缩放，缩放中心为当前画面的中心（如果指定点进行放大，则缩放中心为指定点）
+3, canvas scaling: press the up and down shortcut keys, you can realize the scaling of the canvas, the scaling center is the center of the current picture (if the specified point is enlarged, the scaling center is the specified point)
 ![6.png](image/6.png)
 
-4、具体点放大：按住Ctrl键，点击画布内任意点，即可实现该点放大，放大后的点为画布中心
+4, specific point amplification: hold down the Ctrl key, click any point in the canvas, you can achieve the point amplification, enlarged point for the canvas center
 ![7.png](image/7.png)
 
-5、骨骼点联动：按住Alt键，在移动具体骨骼点的同时，下游所有骨骼点同时移动
+5, bone point linkage: hold down the Alt key, while moving specific bone points, all downstream bone points move at the same time
 
-6、骨骼点旋转：按住Shift键，在移动具体骨骼点的同时，下游所有骨骼点同时旋转，旋转中心为点击点的上级骨骼点
+6, bone point rotation: Hold down the Shift key, while moving the specific bone point, all the downstream bone points rotate at the same time, the rotation center is the upper bone point of the click point
 
 
-## 骨骼点编辑
-1、移动骨骼点
+## Bone point editing
+1. Move bone points
 
-鼠标点击具体的骨骼点，按住进行拖动，移动完成释放鼠标，为依次操作，进行历史记录
+Click on the specific bone point, hold down and drag, move to complete the release of the mouse, and record the history for sequential operations
 
-2、删除骨骼点
+2. Remove bone points
 
 ![8.png](image/8.png)
 
-鼠标移动到具体的骨骼点，点击鼠标右键，选择删除按钮
+Move the mouse to the specific bone point, click the right mouse button, select Delete button
 
-2、新增骨骼点
+2. Add bone points
 
-对已经删除或为识别出来的骨骼点，鼠标右键点击末端骨骼点，选择新增选项，根据上下帧数据预测并新增骨骼点
+For the bone points that have been deleted or identified, right-click the end bone points and select the new option to predict and add bone points according to the next frame data
 
-3、导入骨骼点
+3. Introduce bone points
 
-导入当前点：导入当前帧的上一帧或下一帧的当前骨骼点数据
+Import current point: Import the current bone point data of the previous frame or the next frame of the current frame
 
-导入所有点：导入当前帧的上一帧或下一帧的当前和下游所有骨骼点数据
+Import All points: Import all current and downstream bone point data from the previous or next frame of the current frame
 
-4、手势操作
+4. Gesture operation
 ![9.png](image/9.png)
 
-针对手部复杂的情况和识别不准确的情况，点击左右手心点，可以单独进行手势操作，通过手势操作，可以快速实现对骨骼点的操作，如：
-4.1、左右手互换
+In view of the complicated situation of the hand and the inaccurate recognition, click the left and right palm points, and you can perform gesture operation separately. Through gesture operation, you can quickly realize the operation of bone points, such as:
+4.1. Switch between left and right hands
 
-互换左右手的骨骼数据，
+Swapping left and right hand bone data,
 
-4.2、保存当前收拾
+4.2. Save the current tidy
 
-保存当前手的骨骼数据和手部背景图到手势库
+Save the current hand bone data and hand background image to the gesture library
 
 ![10.png](image/10.png)
 
-4.3、打开、使用手势
+4.3. Open and use gestures
 
-现状手势库内吻合当前手势的手势，点击使用即可使用，即可替换当前手的骨骼数据
+The gesture that matches the current gesture in the current gesture library can be used by clicking to replace the bone data of the current hand
 
-4.4、水平和垂直翻转：以手心骨骼点为中心，水平或垂直翻转手势
+4.4, horizontal and vertical flip: hand bone point as the center, horizontal or vertical flip gesture
