@@ -3,7 +3,7 @@
 > 基于dwpose（肢体）（https://github.com/IDEA-Research/DWPose） 和mediapipe（手部）（https://github.com/google-ai-edge/mediapipe）
 >
 
-[English](README.md) · [简体中文](README.ZH.md)
+[English](README.md) · [简体中文](README_zh.md)
 ## 操作步骤
 1、文件上传
 
