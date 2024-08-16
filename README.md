@@ -4,7 +4,7 @@
 >
 >
 > 
-[English](README.md) · [简体中文](README.zh.md)
+[English](README.md) · [简体中文](README.ZH.md)
 
 ## Operation steps
 1. File upload
