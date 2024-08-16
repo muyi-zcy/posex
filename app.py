@@ -426,4 +426,4 @@ def handle_global_exception(request, exc: Exception):
 
 
 if __name__ == '__main__':
-    uvicorn.run(app, host='0.0.0.0', port=18081)
+    uvicorn.run(app, host='0.0.0.0', port=50001)

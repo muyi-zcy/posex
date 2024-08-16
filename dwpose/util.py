@@ -331,12 +331,3 @@ def faceDetect(candidate, subset, oriImg):
             detect_result.append([int(x), int(y), int(width)])
 
     return detect_result
-
-
-# get max index of 2d array
-def npmax(array):
-    arrayindex = array.argmax(1)
-    arrayvalue = array.max(1)
-    i = arrayvalue.argmax()
-    j = arrayindex[i]
-    return i, j

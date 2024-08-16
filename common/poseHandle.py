@@ -107,12 +107,6 @@ class PoseHandle:
 
 
 def calculate_distance(point1, point2):
-    """
-    计算两点之间的欧几里得距离
-    :param point1: 第一个点的坐标 (x1, y1)
-    :param point2: 第二个点的坐标 (x2, y2)
-    :return: 两点之间的距离
-    """
     x1, y1 = point1
     x2, y2 = point2
     distance = math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
@@ -129,11 +123,9 @@ class HandHandle:
         self.detector = vision.HandLandmarker.create_from_options(options)
 
     def crop_image(self, frame, x, y):
-        # frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         height, width, _ = frame.shape
         x = x * width
         y = y * height
-        # 定义裁剪区域的宽和高为原图片的四分之一
         crop_width = width // 3
         crop_height = height // 3
 
